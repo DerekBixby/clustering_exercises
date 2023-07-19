@@ -48,6 +48,10 @@ def get_zillow_data():
         
     return df
 
+def remove_columns(df, cols_to_remove):  
+    df = df.drop(columns=cols_to_remove)
+    return df
+
 def handle_missing_values(df, prop_required_column = .5, prop_required_row = .70):
     threshold = int(round(prop_required_column*len(df.index),0))
     df.dropna(axis=1, thresh=threshold, inplace=True)
@@ -297,3 +301,48 @@ def X_y_split(df, target):
     X_test -> {X_test.shape}''') 
     
     return X_train, y_train, X_validate, y_validate, X_test, y_test
+
+
+
+# iris data
+
+def new_iris_data():
+    '''
+    This function reads the iris data from the Codeup db into a df.
+    '''
+    sql_query = """
+                SELECT 
+                    species_id,
+                    species_name,
+                    sepal_length,
+                    sepal_width,
+                    petal_length,
+                    petal_width
+                FROM measurements
+                JOIN species USING(species_id)
+                """
+    
+    # Read in DataFrame from Codeup db.
+    df = pd.read_sql(sql_query, get_db_url('iris_db'))
+    
+    return df
+
+def get_iris_data():
+    '''
+    This function reads in iris data from Codeup database, writes data to
+    a csv file if a local file does not exist, and returns a df.
+    '''
+    if os.path.isfile('iris_df.csv'):
+        
+        # If csv file exists read in data from csv file.
+        df = pd.read_csv('iris_df.csv', index_col=0)
+        
+    else:
+        
+        # Read fresh data from db into a DataFrame
+        df = new_iris_data()
+        
+        # Cache data
+        df.to_csv('iris_df.csv')
+        
+    return df
